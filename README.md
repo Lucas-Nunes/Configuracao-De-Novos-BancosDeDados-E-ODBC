@@ -9,10 +9,11 @@ Este programa automatiza a configuração de bancos de dados Firebird e DNS ODBC
 
 ## Como Usar
 
-1. Baixe e instale o .NET Framework 6.0 em seu sistema.
-2. Clone este repositório em sua máquina local.
-3. Execute o programa.
-4. Siga as instruções na interface para configurar seus bancos de dados Firebird e DNS ODBC.
+1. Certifique-se de que o programa esteja localizado dentro da pasta "Renovar" na raiz do seu sistema.
+2. Baixe e instale o .NET Framework 6.0 em seu sistema.
+3. Clone este repositório em sua máquina local.
+4. Execute o programa.
+5. Siga as instruções na interface para configurar seus bancos de dados Firebird e DNS ODBC.
 
 ## Observações
 
