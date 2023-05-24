@@ -120,9 +120,9 @@ public class MainForm : Form
             List<string> cnpjResult = PegaCNPJ(sender, e);
             for (int i = 1; i < 10; i++)
             {
-                if (i < cnpjResult.Count && !string.IsNullOrEmpty(cnpjResult[i]))
+                if (i <= cnpjResult.Count && !string.IsNullOrEmpty(cnpjResult[i - 1]))
                 {
-                cnpjResult.Insert(i, "sem CNPJ");
+                    cnpjResult.Insert(i, "sem CNPJ");
                 }
             }
 
@@ -153,7 +153,13 @@ DADOSREDE04=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados04.fdb
 DADOSREDE05=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados05.fdb
 DADOSREDE06=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados06.fdb"+
 "\n" + "CNPJ02=" + cnpjResult[1] +"\n" +
-"CNPJ03=" +cnpjResult[2] +"\n" +
+"CNPJ03=" + cnpjResult[2] + "\n" +
+"CNPJ04=" + cnpjResult[3] + "\n" +
+"CNPJ05=" + cnpjResult[4] + "\n" +
+"CNPJ06=" + cnpjResult[5] + "\n" +
+"CNPJ07=" + cnpjResult[6] + "\n" +
+"CNPJ08=" + cnpjResult[7] + "\n" +
+"CNPJ09=" +cnpjResult[8] +"\n" +
 
 @"[HOST]
 HOST01=DESENV01\SQL2008
@@ -221,7 +227,13 @@ DADOSLOG=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Log.fdb
 DADOSREDELOG=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Log.fdb
 CNPJ01="+ cnpjResult[0] +"\n" +
 "CNPJ02=" + cnpjResult[1] +"\n" +
-"CNPJ03="+ cnpjResult[2];
+"CNPJ03=" + cnpjResult[2] + "\n" +
+"CNPJ04=" + cnpjResult[3] + "\n" +
+"CNPJ05=" + cnpjResult[4] + "\n" +
+"CNPJ06=" + cnpjResult[5] + "\n" +
+"CNPJ07=" + cnpjResult[6] + "\n" +
+"CNPJ08=" + cnpjResult[7] + "\n" +
+"CNPJ09=" + cnpjResult[8];
         using (StreamWriter writer = new StreamWriter(caminhoCompleto))
         {
             writer.WriteLine(DadosDoArquivo);
