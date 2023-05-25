@@ -189,7 +189,6 @@ public class MainForm : Form
                 if (NumTemp > cnpjResult.Count){cnpjResult.Insert(i, "sem CNPJ");}
                 NumTemp++;
             }
-            MessageBox.Show("" + cnpjResult[1]);
         string DadosDoArquivo = @"
 DADOS01=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados.fdb
 DADOSEMP=C:\RENOVAR\DADOS\" + checkBox.Text + @"\DadosEmp.fdb
