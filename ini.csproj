@@ -5,6 +5,7 @@
 		<TargetFramework>net6.0-windows</TargetFramework>
 		<UseWindowsForms>true</UseWindowsForms>
 		<ApplicationIcon>Rnv_Ico.ico</ApplicationIcon>
+		<Company>Renovar Sistemas</Company>
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="FirebirdSql.Data.FirebirdClient" Version="9.1.1" />
