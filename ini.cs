@@ -132,7 +132,6 @@ public class MainForm : Form
                     while (reader.Read())
                     {
                         string cnpj = reader.GetString(0);
-                        MessageBox.Show(cnpj);
                         cnpjResult.Add(cnpj);
                     }
                 }
