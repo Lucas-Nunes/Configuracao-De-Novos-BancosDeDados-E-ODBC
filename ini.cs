@@ -30,9 +30,9 @@ public class MainForm : Form
         try
         {
             int rest = 0;
-            int checkBoxWidth = 100;
+            int checkBoxWidth = 200;
             int checkBoxHeight = 20;
-            int initialX = 50;
+            int initialX = 30;//50
             int initialY = 150;
             int spacing = 10;
 
@@ -85,11 +85,11 @@ public class MainForm : Form
 
             for (int i = 0; i < subpastas.Length; i++)
             {
-                if (rest == 7)
+                if (rest == 4)
                 {
                     rest = 0;
                     initialY += 45;
-                    initialX = 50;
+                    initialX = 30;//50
                     spacing = 10;
 
                 }
@@ -105,7 +105,11 @@ public class MainForm : Form
                 rest++;
             }
         }
-        catch (Exception ex){MessageBox.Show("Ocorreu um erro: " + ex.Message);}
+        catch
+        {
+            MessageBox.Show("Pasta Dados não encontrada!");
+            Environment.Exit(0);
+        }
     }
 
     private List<string> PegaCNPJ(object sender, EventArgs e)
@@ -121,7 +125,6 @@ public class MainForm : Form
         using (FbConnection connection = new FbConnection(connectionString))
         {
             connection.Open();
-
             using (FbCommand command = new FbCommand(query, connection))
             {
                 using (FbDataReader reader = command.ExecuteReader())
@@ -129,6 +132,7 @@ public class MainForm : Form
                     while (reader.Read())
                     {
                         string cnpj = reader.GetString(0);
+                        MessageBox.Show(cnpj);
                         cnpjResult.Add(cnpj);
                     }
                 }
@@ -167,6 +171,7 @@ public class MainForm : Form
             RadioButton checkBox = (RadioButton)sender;
             DialogResult resultado = MessageBox.Show("O Banco é unificado?", "Caixa de Diálogo", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             int uniBanco = 0;
+            int NumTemp = 1;
             if (resultado == DialogResult.Yes){uniBanco = 1;}
             else if (resultado == DialogResult.No){uniBanco = 0;}
             string DiretorioDeExecução = Directory.GetCurrentDirectory();
@@ -178,13 +183,14 @@ public class MainForm : Form
             string caminhoCompleto = Path.Combine(pastaDestino, NomeDoArquivo);
             List<string> cnpjResult = PegaCNPJ(sender, e);
             List<string> DadosUni = new List<string>();
-            for (int i = 1; i < 10; i++)
+            for (int i = 0; i < 10; i++)
             {   
                 if(uniBanco == 0){DadosUni.Add("0"+i);}
                 else{DadosUni.Add("");}
-                if (i <= cnpjResult.Count && !string.IsNullOrEmpty(cnpjResult[i - 1])){cnpjResult.Insert(i, "sem CNPJ");}
+                if (NumTemp > cnpjResult.Count){cnpjResult.Insert(i, "sem CNPJ");}
+                NumTemp++;
             }
-
+            MessageBox.Show("" + cnpjResult[1]);
         string DadosDoArquivo = @"
 DADOS01=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados.fdb
 DADOSEMP=C:\RENOVAR\DADOS\" + checkBox.Text + @"\DadosEmp.fdb
@@ -298,6 +304,9 @@ CNPJ01="+ cnpjResult[0] +"\n" +
 
     private IEnumerable<string> BuscarArquivosDados(object sender, EventArgs e)
     {
+        IEnumerable<string> returne = Enumerable.Empty<string>();
+        try
+        {
         RadioButton checkBox = (RadioButton)sender;
         string DiretorioDeExecuçãoDados = Directory.GetCurrentDirectory();
         string diretorioPaiDados = Path.Combine(DiretorioDeExecuçãoDados, "..");
@@ -305,6 +314,7 @@ CNPJ01="+ cnpjResult[0] +"\n" +
         string pastaComBanco = Path.Combine(pastaDados, checkBox.Text);
         string[] arquivos = Directory.GetFiles(pastaComBanco, "*DADOS*").Where(arquivo => !Path.GetFileName(arquivo).Contains("DADOSEMP")).ToArray();
         return arquivos;
+        }catch{return returne;}
     }
 
     private void CheckBox_CheckedChanged(object sender, EventArgs e)
@@ -312,10 +322,16 @@ CNPJ01="+ cnpjResult[0] +"\n" +
         RadioButton checkBox = (RadioButton)sender;
         if (checkBox.Checked)
         {
-            Criarini(sender, e);
             int i = 0;
             string pastaComBanco;
             IEnumerable<string> arquivosFiltrados = BuscarArquivosDados(sender, e);
+            if(arquivosFiltrados.Any()){}
+            else
+            {
+                MessageBox.Show("Nenhum Arquivo DADOS.FDB encontrado!");
+                return;
+            }
+            Criarini(sender, e);
             try
             {
                 foreach (string arquivos in arquivosFiltrados)
@@ -372,9 +388,9 @@ CNPJ01="+ cnpjResult[0] +"\n" +
         {
             string termoDeBusca = searchText;            
             foreach (var control in Controls.OfType<RadioButton>().ToList()){Controls.Remove(control);}
-                int checkBoxWidth = 100;
+                int checkBoxWidth = 200;
                 int checkBoxHeight = 20;
-                int initialX = 50;
+                int initialX = 30;
                 int initialY = 150;
                 int spacing = 10;
                 string DiretorioDeExecução = Directory.GetCurrentDirectory();
@@ -391,11 +407,11 @@ CNPJ01="+ cnpjResult[0] +"\n" +
                     if (checkBoxExistente == null)
                     {
                             RadioButton checkBox = new RadioButton();
-                            if (rest == 7)
+                            if (rest == 4)
                             {
                                 rest=0;
                                 initialY += 45;
-                                initialX = 50;
+                                initialX = 30;
                                 spacing = 10;
 
                             }
@@ -417,9 +433,9 @@ CNPJ01="+ cnpjResult[0] +"\n" +
                 Controls.Remove(control);
             }
 
-            int checkBoxWidth = 100;
+            int checkBoxWidth = 200;
             int checkBoxHeight = 20; 
-            int initialX = 50;
+            int initialX = 30;
             int initialY = 150;
             int spacing = 10;
             string DiretorioDeExecução = Directory.GetCurrentDirectory();
@@ -432,13 +448,13 @@ CNPJ01="+ cnpjResult[0] +"\n" +
                 string folderName = Path.GetFileName(folderPath);
 
                 RadioButton checkBox = new RadioButton();
-                if(rest == 7) 
+                if(rest == 4) 
                 {
                     rest = 0;
                     initialY += 45;
-                    checkBoxWidth = 100;
+                    checkBoxWidth = 200;
                     checkBoxHeight = 20;
-                    initialX = 50;
+                    initialX = 30;
                     spacing = 10;
 
                 }
