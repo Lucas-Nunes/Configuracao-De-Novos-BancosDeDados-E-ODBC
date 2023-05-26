@@ -73,6 +73,30 @@ public class MainForm : Form
             searchTextBox.TextChanged += new EventHandler(SearchTextBox_TextChanged);
             Controls.Add(searchTextBox);
 
+            Label versionLabel = new Label();
+            string versaoDP = PegaVersaoDP();
+            versionLabel.Text = "Versão do Dispositivo: " + versaoDP;
+            versionLabel.BackColor = Color.White;
+            versionLabel.Location = new Point(50, 65); // 50 90
+            versionLabel.AutoSize = true;
+            Controls.Add(versionLabel);
+
+            Label Desc1Label = new Label();
+            Desc1Label.Text = "Desatualizado";
+            Desc1Label.BackColor = Color.Red;
+            Desc1Label.ForeColor = Color.White;
+            Desc1Label.Location = new Point(750, 65); // 50 90
+            Desc1Label.Size = new Size(85, 20);
+            Controls.Add(Desc1Label);
+
+            Label Desc2Label = new Label();
+            Desc2Label.Text = "Atualizado";
+            Desc2Label.BackColor = Color.Green;
+            Desc2Label.ForeColor = Color.White;
+            Desc2Label.Location = new Point(650, 65); // 50 90
+            Desc2Label.Size = new Size(85,20);
+            Controls.Add(Desc2Label);
+
             CheckBox atualizador = new CheckBox();
             atualizador.Width = BotaoWidth;
             atualizador.Height = BotaoHeight;
@@ -88,9 +112,9 @@ public class MainForm : Form
                 if (rest == 4)
                 {
                     rest = 0;
-                    initialY += 45;
-                    initialX = 30;//50
-                    spacing = 10;
+                    initialY += 65;//45
+                    initialX = 30;//50//30
+                    spacing = 10;//10
 
                 }
                 string folderPath = subpastas[i];
@@ -101,6 +125,18 @@ public class MainForm : Form
                 checkBox.Location = new Point(initialX + (checkBoxWidth + spacing) * rest, initialY);
                 checkBox.Size = new Size(checkBoxWidth, checkBoxHeight);
                 checkBox.CheckedChanged += CheckBox_CheckedChanged;
+
+                Label CheckBoxStatuslabel = new Label();
+                string VersaoBanco = PegaVersao(checkBox);
+                CheckBoxStatuslabel.Text = "Versão do Banco: "+VersaoBanco;
+                if(VersaoBanco != versaoDP){CheckBoxStatuslabel.BackColor = Color.Red;}
+                else { CheckBoxStatuslabel.BackColor = Color.Green; }
+                if (VersaoBanco == "Pasta Vazia!") { CheckBoxStatuslabel.BackColor = Color.Black; }
+                CheckBoxStatuslabel.ForeColor = Color.White;
+                CheckBoxStatuslabel.Location = new Point(checkBox.Location.X, checkBox.Location.Y + checkBox.Height);
+                CheckBoxStatuslabel.Size = new Size(checkBoxWidth, checkBoxHeight);
+                Controls.Add(CheckBoxStatuslabel);
+
                 Controls.Add(checkBox);
                 rest++;
             }
@@ -110,6 +146,90 @@ public class MainForm : Form
             MessageBox.Show("Pasta Dados não encontrada!");
             Environment.Exit(0);
         }
+    }
+
+    private string PegaVersaoDP() 
+    {
+        string DiretorioDeExecuçãoDados = Directory.GetCurrentDirectory();
+        string diretorioPaiDados = Path.Combine(DiretorioDeExecuçãoDados, "..");
+        string diretorioAtualizador = Path.Combine(diretorioPaiDados, "Acesso.exe");
+        string caminhoDoArquivo = diretorioAtualizador;
+        string resultVersao = "";
+        // Verifica se o arquivo existe
+        if (System.IO.File.Exists(caminhoDoArquivo))
+        {
+            // Obtém as informações da versão do arquivo
+            FileVersionInfo informacoesVersao = FileVersionInfo.GetVersionInfo(caminhoDoArquivo);
+
+            // Obtém a versão do arquivo
+            string versao = informacoesVersao.FileVersion;
+            int index = versao.IndexOf('.', versao.IndexOf('.') + 1);
+            resultVersao = versao.Substring(0, index);
+
+            // Exibe a versão do arquivo
+        }
+        else
+        {
+            MessageBox.Show("Acesso.exe não encontrado!");
+            Environment.Exit(0);
+        }
+        return resultVersao;
+
+    }
+
+    private string PegaVersao(object sender)
+    {
+        RadioButton checkBox = (RadioButton)sender;
+        string DiretorioDeExecuçãoDados = Directory.GetCurrentDirectory();
+        string diretorioPaiDados = Path.Combine(DiretorioDeExecuçãoDados, "..");
+        string pastaDados = Path.Combine(diretorioPaiDados, "dados");
+        string pastaComBanco = Path.Combine(pastaDados, checkBox.Text);
+        string connectionString = "User=SYSDBA;Password=masterkey;Database="+pastaComBanco+"\\DADOSEMP.fdb;DataSource=localhost;Port=3050;Dialect=3;Charset=NONE;";
+        string query1 = "select VERSAOPRINCIPAL from modulos_versao WHERE modulo = 'GERENCIAL'";
+        string query2 = "select VERSAOMENOR from modulos_versao WHERE modulo = 'GERENCIAL'";
+        string VersaoResult1 = "";
+        string VersaoResult2 = "";
+
+        try 
+        {
+            using (FbConnection connection = new FbConnection(connectionString))
+            {
+                connection.Open();
+                using (FbCommand command = new FbCommand(query1, connection))
+                {
+                    using (FbDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            VersaoResult1 = reader.GetString(0);
+                        }
+                    }
+                }
+                connection.Close();
+            }
+            using (FbConnection connection = new FbConnection(connectionString))
+            {
+                connection.Open();
+                using (FbCommand command = new FbCommand(query2, connection))
+                {
+                    using (FbDataReader reader = command.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            VersaoResult2 = reader.GetString(0);
+                        }
+                    }
+                }
+                connection.Close();
+            }
+            string VersaoTotal = VersaoResult1 + "." + VersaoResult2;
+            return VersaoTotal;
+        }catch 
+        {
+            string ErroMSG = "Pasta Vazia!";
+            return ErroMSG;
+        }
+        
     }
 
     private List<string> PegaCNPJ(object sender, EventArgs e)
@@ -170,7 +290,6 @@ public class MainForm : Form
             RadioButton checkBox = (RadioButton)sender;
             DialogResult resultado = MessageBox.Show("O Banco é unificado?", "Caixa de Diálogo", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
             int uniBanco = 0;
-            int NumTemp = 1;
             if (resultado == DialogResult.Yes){uniBanco = 1;}
             else if (resultado == DialogResult.No){uniBanco = 0;}
             string DiretorioDeExecução = Directory.GetCurrentDirectory();
@@ -182,47 +301,90 @@ public class MainForm : Form
             string caminhoCompleto = Path.Combine(pastaDestino, NomeDoArquivo);
             List<string> cnpjResult = PegaCNPJ(sender, e);
             List<string> DadosUni = new List<string>();
+            
             for (int i = 0; i < 10; i++)
-            {   
-                if(uniBanco == 0){DadosUni.Add("0"+i);}
-                else{DadosUni.Add("");}
-                if (NumTemp > cnpjResult.Count){cnpjResult.Insert(i, "sem CNPJ");}
-                NumTemp++;
+            {
+                if (i != 0)
+                {
+                    if (uniBanco == 0)
+                    {
+                        DadosUni.Add("0" + (i + 1));
+                    }
+                    else
+                    {
+                        DadosUni.Add("");
+                    }
+                }
+                else
+                {
+                    DadosUni.Add("");
+                }
+            }
+
+            for(int i = 0;i< 10; i++)
+            {
+                if (i >= cnpjResult.Count)
+                {
+                    cnpjResult.Add("sem CNPJ");
+                }
+                else if (string.IsNullOrEmpty(cnpjResult[i]))
+                {
+                    cnpjResult[i] = "sem CNPJ";
+                }
+                else if (cnpjResult[i] == "00000000000000") 
+                {
+                    for(int j = 0; j < cnpjResult.Count; j++) 
+                    {
+                        if(cnpjResult[j] != "00000000000000"){cnpjResult[i] = cnpjResult[j];}
+                    }
+
+                }
             }
         string DadosDoArquivo = @"
+[SISTEMA]
 DADOS01=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados.fdb
+DADOS02=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[1]+".fdb"+@"
+DADOS03=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[2]+".fdb"+@"
+DADOS04=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[3]+".fdb"+@"
+DADOS05=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[4]+".fdb"+@"
+DADOS06=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[5]+".fdb"+@"
+DADOS07=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[5]+".fdb"+@"
+DADOS08=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[5]+".fdb"+@"
+DADOS09=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[5]+".fdb"+@"
 DADOSEMP=C:\RENOVAR\DADOS\" + checkBox.Text + @"\DadosEmp.fdb
-DADOSLOG=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Log.fdb
-SERVIDOR=LOCALHOST
-
 DADOSREDE01=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados.fdb
-DADOSREDEEMP=C:\RENOVAR\DADOS\" + checkBox.Text + @"\DadosEmp.fdb
-DADOSREDELOG=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Log.fdb
-SERVIDORREDE=LOCALHOST
-
-DADOS_SQL01=Dados01
-DADOS_SQLEMP=DadosEmp
-DADOS_SQLLOG=DadosLog"+
-
-"\n" + "CNPJ01=" +cnpjResult[0]+ @"
-DADOS02 =C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados02.fdb
-DADOS03=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados03.fdb
-DADOS04=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados04.fdb
-DADOS05=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados05.fdb
-DADOS06=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados06.fdb
 DADOSREDE02=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados02.fdb
 DADOSREDE03=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados03.fdb
 DADOSREDE04=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados04.fdb
 DADOSREDE05=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados05.fdb
-DADOSREDE06=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados06.fdb"+
-"\n" + "CNPJ02=" + cnpjResult[1] +"\n" +
+DADOSREDE06=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados06.fdb
+DADOSREDE07=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados07.fdb
+DADOSREDE08=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados08.fdb
+DADOSREDE09=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados09.fdb
+DADOSREDEEMP=C:\RENOVAR\DADOS\" + checkBox.Text + @"\DadosEmp.fdb
+DADOSLOG=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Log.fdb
+DADOSREDELOG=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Log.fdb
+CNPJ01="+ cnpjResult[0] +"\n" +
+"CNPJ02=" + cnpjResult[1] +"\n" +
 "CNPJ03=" + cnpjResult[2] + "\n" +
 "CNPJ04=" + cnpjResult[3] + "\n" +
 "CNPJ05=" + cnpjResult[4] + "\n" +
 "CNPJ06=" + cnpjResult[5] + "\n" +
 "CNPJ07=" + cnpjResult[6] + "\n" +
 "CNPJ08=" + cnpjResult[7] + "\n" +
-"CNPJ09=" +cnpjResult[8] +"\n" +
+"CNPJ09=" + cnpjResult[8]+@"
+SERVIDOR=LOCALHOST
+
+[REDE]
+DADOSREDE01=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados.fdb
+DADOSREDEEMP=C:\RENOVAR\DADOS\" + checkBox.Text + @"\DadosEmp.fdb
+DADOSREDELOG=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Log.fdb
+SERVIDORREDE=LOCALHOST
+
+[SQL]
+DADOS_SQL01=Dados01
+DADOS_SQLEMP=DadosEmp
+DADOS_SQLLOG=DadosLog" + "\n" +
 
 @"[HOST]
 HOST01=DESENV01\SQL2008
@@ -240,7 +402,7 @@ HOSTLOG=DESENV01\SQL2008
 
 [DATABASE]
 SGBD=01
-UNIFICADA="+ uniBanco+"\n"+@"
+UNIFICADA=" + uniBanco+"\n"+@"
 
 [DATABASE VERSION]
 VERSION=2008
@@ -270,33 +432,7 @@ USERNAME=
 PASSWORD=
 DATABASE=
 PORT=
-EMPRESA=1
-[SISTEMA]
-DADOS01=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados.fdb
-DADOS02=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[1]+".fdb"+@"
-DADOS03=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[2]+".fdb"+@"
-DADOS04=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[3]+".fdb"+@"
-DADOS05=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[4]+".fdb"+@"
-DADOS06=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados"+DadosUni[5]+".fdb"+@"
-DADOSEMP=C:\RENOVAR\DADOS\" + checkBox.Text + @"\DadosEmp.fdb
-DADOSREDE01=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados.fdb
-DADOSREDE02=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados02.fdb
-DADOSREDE03=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados03.fdb
-DADOSREDE04=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados04.fdb
-DADOSREDE05=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados05.fdb
-DADOSREDE06=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Dados06.fdb
-DADOSREDEEMP=C:\RENOVAR\DADOS\" + checkBox.Text + @"\DadosEmp.fdb
-DADOSLOG=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Log.fdb
-DADOSREDELOG=C:\RENOVAR\DADOS\" + checkBox.Text + @"\Log.fdb
-CNPJ01="+ cnpjResult[0] +"\n" +
-"CNPJ02=" + cnpjResult[1] +"\n" +
-"CNPJ03=" + cnpjResult[2] + "\n" +
-"CNPJ04=" + cnpjResult[3] + "\n" +
-"CNPJ05=" + cnpjResult[4] + "\n" +
-"CNPJ06=" + cnpjResult[5] + "\n" +
-"CNPJ07=" + cnpjResult[6] + "\n" +
-"CNPJ08=" + cnpjResult[7] + "\n" +
-"CNPJ09=" + cnpjResult[8];
+EMPRESA=1";
         using (StreamWriter writer = new StreamWriter(caminhoCompleto)){writer.WriteLine(DadosDoArquivo);}
     }
 
@@ -322,6 +458,8 @@ CNPJ01="+ cnpjResult[0] +"\n" +
         {
             int i = 0;
             string pastaComBanco;
+            //string VersaoBanco = PegaVersaoDP(sender);
+            //MessageBox.Show(VersaoBanco);
             IEnumerable<string> arquivosFiltrados = BuscarArquivosDados(sender, e);
             if(arquivosFiltrados.Any()){}
             else
@@ -380,13 +518,17 @@ CNPJ01="+ cnpjResult[0] +"\n" +
     private void SearchTextBox_TextChanged(object sender, EventArgs e)
     {
         TextBox textBox = (TextBox)sender;
+        Label CheckBoxStatuslabel = new Label();
+        string versaoDP = PegaVersaoDP();
         string searchText = textBox.Text;
+        string VersaoBanco;
         int rest = 0;
         if (!string.IsNullOrWhiteSpace(searchText))
         {
             string termoDeBusca = searchText;            
             foreach (var control in Controls.OfType<RadioButton>().ToList()){Controls.Remove(control);}
-                int checkBoxWidth = 200;
+            foreach (var control in Controls.OfType<Label>().ToList()){Controls.Remove(control);}
+            int checkBoxWidth = 200;
                 int checkBoxHeight = 20;
                 int initialX = 30;
                 int initialY = 150;
@@ -408,7 +550,7 @@ CNPJ01="+ cnpjResult[0] +"\n" +
                             if (rest == 4)
                             {
                                 rest=0;
-                                initialY += 45;
+                                initialY += 65;
                                 initialX = 30;
                                 spacing = 10;
 
@@ -419,18 +561,49 @@ CNPJ01="+ cnpjResult[0] +"\n" +
                             checkBox.Size = new Size(checkBoxWidth, checkBoxHeight);
                             checkBox.CheckedChanged += CheckBox_CheckedChanged;
                             Controls.Add(checkBox);
-                    }
+
+                            CheckBoxStatuslabel = new Label();
+                            VersaoBanco = PegaVersao(checkBox);
+                            CheckBoxStatuslabel.Text = "Versão do Banco: " + VersaoBanco;
+                            CheckBoxStatuslabel.ForeColor = Color.White;
+                            if (VersaoBanco != versaoDP) { CheckBoxStatuslabel.BackColor = Color.Red; }
+                            else { CheckBoxStatuslabel.BackColor = Color.Green; }
+                            if (VersaoBanco == "Pasta Vazia!") { CheckBoxStatuslabel.BackColor = Color.Black; }
+                            CheckBoxStatuslabel.Location = new Point(checkBox.Location.X, checkBox.Location.Y + checkBox.Height);
+                            CheckBoxStatuslabel.Size = new Size(checkBoxWidth, checkBoxHeight);
+                            Controls.Add(CheckBoxStatuslabel);
+
+                            Label versionLabel = new Label();
+                            versionLabel.Text = "Versão do Dispositivo: " + versaoDP;
+                            versionLabel.BackColor = Color.White;
+                            versionLabel.Location = new Point(50, 65); // 50 90
+                            versionLabel.AutoSize = true;
+                            Controls.Add(versionLabel);
+
+                            Label Desc1Label = new Label();
+                            Desc1Label.Text = "Desatualizado";
+                            Desc1Label.BackColor = Color.Red;
+                            Desc1Label.ForeColor = Color.White;
+                            Desc1Label.Location = new Point(750, 65); // 50 90
+                            Desc1Label.Size = new Size(85, 20);
+                            Controls.Add(Desc1Label);
+
+                            Label Desc2Label = new Label();
+                            Desc2Label.Text = "Atualizado";
+                            Desc2Label.BackColor = Color.Green;
+                            Desc2Label.ForeColor = Color.White;
+                            Desc2Label.Location = new Point(650, 65); // 50 90
+                            Desc2Label.Size = new Size(85, 20);
+                            Controls.Add(Desc2Label);
+                }
                     rest++;
                     i++;
                 }
         }
         else
         {
-            foreach (var control in Controls.OfType<RadioButton>().ToList())
-            {
-                Controls.Remove(control);
-            }
-
+            foreach (var control in Controls.OfType<RadioButton>().ToList()) { Controls.Remove(control); }
+            foreach (var control in Controls.OfType<Label>().ToList()) { Controls.Remove(control); }
             int checkBoxWidth = 200;
             int checkBoxHeight = 20; 
             int initialX = 30;
@@ -449,7 +622,7 @@ CNPJ01="+ cnpjResult[0] +"\n" +
                 if(rest == 4) 
                 {
                     rest = 0;
-                    initialY += 45;
+                    initialY += 65;
                     checkBoxWidth = 200;
                     checkBoxHeight = 20;
                     initialX = 30;
@@ -462,6 +635,41 @@ CNPJ01="+ cnpjResult[0] +"\n" +
                 checkBox.Size = new Size(checkBoxWidth, checkBoxHeight);
                 checkBox.CheckedChanged += CheckBox_CheckedChanged;
                 Controls.Add(checkBox);
+
+                CheckBoxStatuslabel = new Label();
+                VersaoBanco = PegaVersao(checkBox);
+                CheckBoxStatuslabel.Text = "Versão do Banco: " + VersaoBanco;
+                CheckBoxStatuslabel.ForeColor = Color.White;
+                if (VersaoBanco != versaoDP) { CheckBoxStatuslabel.BackColor = Color.Red; }
+                else { CheckBoxStatuslabel.BackColor = Color.Green; }
+                if (VersaoBanco == "Pasta Vazia!") { CheckBoxStatuslabel.BackColor = Color.Black; }
+                CheckBoxStatuslabel.Location = new Point(checkBox.Location.X, checkBox.Location.Y + checkBox.Height);
+                CheckBoxStatuslabel.Size = new Size(checkBoxWidth, checkBoxHeight);
+                Controls.Add(CheckBoxStatuslabel);
+
+                Label versionLabel = new Label();
+                versionLabel.Text = "Versão do Dispositivo: " + versaoDP;
+                versionLabel.BackColor = Color.White;
+                versionLabel.Location = new Point(50, 65); // 50 90
+                versionLabel.AutoSize = true;
+                Controls.Add(versionLabel);
+
+                Label Desc1Label = new Label();
+                Desc1Label.Text = "Desatualizado";
+                Desc1Label.BackColor = Color.Red;
+                Desc1Label.ForeColor = Color.White;
+                Desc1Label.Location = new Point(750, 65); // 50 90
+                Desc1Label.Size = new Size(85, 20);
+                Controls.Add(Desc1Label);
+
+                Label Desc2Label = new Label();
+                Desc2Label.Text = "Atualizado";
+                Desc2Label.BackColor = Color.Green;
+                Desc2Label.ForeColor = Color.White;
+                Desc2Label.Location = new Point(650, 65); // 50 90
+                Desc2Label.Size = new Size(85, 20);
+                Controls.Add(Desc2Label);
+
                 rest++;
             }
         }
