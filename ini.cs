@@ -270,19 +270,25 @@ public class MainForm : Form
 
     private void CheckAtualizador()
     {
-        string DiretorioDeExecuçãoDados = Directory.GetCurrentDirectory();
-        string diretorioPaiDados = Path.Combine(DiretorioDeExecuçãoDados, "..");
-        string diretorioAtualizador = Path.Combine(diretorioPaiDados, "Atualizador.exe");
-        string caminhoExe = diretorioAtualizador;
-        ProcessStartInfo startInfo = new ProcessStartInfo();
-        startInfo.FileName = caminhoExe;
-        using (Process processo = new Process())
+        try 
         {
-            processo.StartInfo = startInfo;
-            processo.Start();
-            processo.WaitForExit();
+            string DiretorioDeExecuçãoDados = Directory.GetCurrentDirectory();
+            string diretorioPaiDados = Path.Combine(DiretorioDeExecuçãoDados, "..");
+            string diretorioAtualizador = Path.Combine(diretorioPaiDados, "Atualizador.exe");
+            string caminhoExe = diretorioAtualizador;
+            ProcessStartInfo startInfo = new ProcessStartInfo();
+            startInfo.FileName = caminhoExe;
+            using (Process processo = new Process())
+            {
+                processo.StartInfo = startInfo;
+                processo.Start();
+                processo.WaitForExit();
+            }
+            MessageBox.Show("Banco Configurado com Sucesso!");
+        }catch
+        {
+            MessageBox.Show("Erro! Atualizador.exe não encontrado!\nNão foi possível iniciar o atualizador, mas o banco foi configurado com Sucesso!.");
         }
-        MessageBox.Show("Banco Configurado com Sucesso!");
     }
 
     private void Criarini(object sender, EventArgs e)
