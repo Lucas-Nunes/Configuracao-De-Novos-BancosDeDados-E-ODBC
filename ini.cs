@@ -9,6 +9,7 @@ using Microsoft.Win32;
 using FirebirdSql.Data.FirebirdClient;
 using System.Linq.Expressions;
 using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 public class MainForm : Form
 {
@@ -19,102 +20,104 @@ public class MainForm : Form
         Icon icon = new Icon("Rnv_Ico.ico");
         this.Icon = icon;
         this.BackColor = Color.FromArgb(54,56,114);
-        this.Size = new Size(900, 500);
-        this.MinimumSize = new Size(900, 500);
-        this.MaximumSize = new Size(900, 500); 
+        this.Size = new Size(950, 550);
+        this.MinimumSize = new Size(950, 550);
+        this.MaximumSize = new Size(950, 550); 
         this.MaximizeBox = false;
-        this.AutoScroll = true;
     }
+
     private void InitializeComponents()
     {
         try
         {
             int rest = 0;
-            int checkBoxWidth = 200;
+            int checkBoxWidth = 208;
             int checkBoxHeight = 20;
-            int initialX = 30;//50
-            int initialY = 150;
+            int initialX = 30;
+            int initialY = 30;
             int spacing = 10;
-
-            int BotaoWidth = 100;
-            int BotaoHeight = 20;
-            int BotaoinitialX = 345;
-            int BotaoinitialY = 70;
 
             string DiretorioDeExecução = Directory.GetCurrentDirectory();
             string diretorioPai = Path.Combine(DiretorioDeExecução, "..");
             string pastaProcurada = Path.Combine(diretorioPai, "dados");
             string[] subpastas = Directory.GetDirectories(pastaProcurada);
 
-            // Título do formulário
+            Panel panel01 = new Panel();
+            panel01.Size = new Size(900,100);
+            panel01.Location = new Point(10,10);
+            panel01.BackColor = Color.Transparent;
+            Controls.Add(panel01);
+
             Text = "Configuração de Novos Bancos de Dados e ODBC";
             Icon = SystemIcons.Information;
-            int labelMargin = 5; // Margem entre o ícone e o Label
-            int labelWidth = 200; // Largura do Label
-            int labelHeight = SystemInformation.CaptionHeight; // Altura do Label igual à altura da barra de título
-            int labelX = Icon.Width + labelMargin; // Posição X do Label
+            int labelMargin = 5;
+            int labelHeight = SystemInformation.CaptionHeight;
+            int labelX = Icon.Width + labelMargin;
 
-            // Criar o Label
-            Label label = new Label();
-            label.AutoSize = false;
-            label.Width = labelWidth;
-            label.Height = labelHeight;
-            label.Location = new Point(labelX, 0);
-            label.TextAlign = ContentAlignment.MiddleLeft;
-            label.Dock = DockStyle.None; // Desabilitar o dock para permitir ajuste manual
-            Controls.Add(label);
+            Panel rodapéPanel = new Panel();
+            rodapéPanel.Location = new Point(0,490);
+            rodapéPanel.Size = new Size(950,20);
+            rodapéPanel.BackColor = Color.White;
+            Controls.Add(rodapéPanel);
+
+            Panel RadioBancoPanel = new Panel();
+            RadioBancoPanel.Location = new Point(0,100);
+            RadioBancoPanel.Size = new Size(930,340);
+            RadioBancoPanel.BackColor = Color.Transparent;
+            RadioBancoPanel.AutoScroll = true;
+            Controls.Add(RadioBancoPanel);
+
 
             TextBox searchTextBox = new TextBox();
-            searchTextBox.Location = new Point(50, 35);
-            searchTextBox.Size = new Size(200, 50);
+            searchTextBox.Location = new Point(30, 30);
+            searchTextBox.Size = new Size(930, 50);
             searchTextBox.ForeColor = Color.Black;
             searchTextBox.Text = "Filtrar por nome";
-            searchTextBox.Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top;
-            searchTextBox.TextChanged += new EventHandler(SearchTextBox_TextChanged);
-            Controls.Add(searchTextBox);
+            searchTextBox.TextChanged += (sender, e) => SearchTextBox_TextChanged(sender, e, RadioBancoPanel); 
+            panel01.Controls.Add(searchTextBox);
 
             Label versionLabel = new Label();
             string versaoDP = PegaVersaoDP();
             versionLabel.Text = "Versão do Dispositivo: " + versaoDP;
             versionLabel.BackColor = Color.White;
-            versionLabel.Location = new Point(50, 65); // 50 90
+            versionLabel.Location = new Point(30, 65);
             versionLabel.AutoSize = true;
-            Controls.Add(versionLabel);
+            panel01.Controls.Add(versionLabel);
 
             Label Desc1Label = new Label();
             Desc1Label.Text = "Desatualizado";
             Desc1Label.BackColor = Color.Red;
             Desc1Label.ForeColor = Color.White;
-            Desc1Label.Location = new Point(750, 65); // 50 90
+            Desc1Label.Location = new Point(750, 65);
             Desc1Label.Size = new Size(85, 20);
-            Controls.Add(Desc1Label);
+            panel01.Controls.Add(Desc1Label);
 
             Label Desc2Label = new Label();
             Desc2Label.Text = "Atualizado";
             Desc2Label.BackColor = Color.Green;
             Desc2Label.ForeColor = Color.White;
-            Desc2Label.Location = new Point(650, 65); // 50 90
+            Desc2Label.Location = new Point(650, 65);
             Desc2Label.Size = new Size(85,20);
-            Controls.Add(Desc2Label);
+            panel01.Controls.Add(Desc2Label);
 
             CheckBox atualizador = new CheckBox();
-            atualizador.Width = BotaoWidth;
-            atualizador.Height = BotaoHeight;
+            atualizador.Width = 100;
+            atualizador.Height = 20;
             atualizador.AutoSize = true;
-            atualizador.Location = new Point(BotaoinitialX, BotaoinitialY);
+            atualizador.Location = new Point(345, 65);
             atualizador.Text = "Atualizador de Banco SQL";
             atualizador.BackColor = Color.White;
             atualizador.CheckedChanged += Atualizador_CheckedChanged;
-            Controls.Add(atualizador);
+            panel01.Controls.Add(atualizador);
 
             for (int i = 0; i < subpastas.Length; i++)
             {
                 if (rest == 4)
                 {
                     rest = 0;
-                    initialY += 65;//45
-                    initialX = 30;//50//30
-                    spacing = 10;//10
+                    initialY += 65;
+                    initialX = 30;
+                    spacing = 10;
 
                 }
                 string folderPath = subpastas[i];
@@ -135,9 +138,9 @@ public class MainForm : Form
                 CheckBoxStatuslabel.ForeColor = Color.White;
                 CheckBoxStatuslabel.Location = new Point(checkBox.Location.X, checkBox.Location.Y + checkBox.Height);
                 CheckBoxStatuslabel.Size = new Size(checkBoxWidth, checkBoxHeight);
-                Controls.Add(CheckBoxStatuslabel);
+                RadioBancoPanel.Controls.Add(CheckBoxStatuslabel);
 
-                Controls.Add(checkBox);
+                RadioBancoPanel.Controls.Add(checkBox);
                 rest++;
             }
         }
@@ -155,18 +158,12 @@ public class MainForm : Form
         string diretorioAtualizador = Path.Combine(diretorioPaiDados, "Acesso.exe");
         string caminhoDoArquivo = diretorioAtualizador;
         string resultVersao = "";
-        // Verifica se o arquivo existe
         if (System.IO.File.Exists(caminhoDoArquivo))
         {
-            // Obtém as informações da versão do arquivo
             FileVersionInfo informacoesVersao = FileVersionInfo.GetVersionInfo(caminhoDoArquivo);
-
-            // Obtém a versão do arquivo
             string versao = informacoesVersao.FileVersion;
             int index = versao.IndexOf('.', versao.IndexOf('.') + 1);
             resultVersao = versao.Substring(0, index);
-
-            // Exibe a versão do arquivo
         }
         else
         {
@@ -189,7 +186,6 @@ public class MainForm : Form
         string query2 = "select VERSAOMENOR from modulos_versao WHERE modulo = 'GERENCIAL'";
         string VersaoResult1 = "";
         string VersaoResult2 = "";
-
         try 
         {
             using (FbConnection connection = new FbConnection(connectionString))
@@ -441,7 +437,6 @@ PORT=
 EMPRESA=1";
         using (StreamWriter writer = new StreamWriter(caminhoCompleto)){writer.WriteLine(DadosDoArquivo);}
     }
-
     private IEnumerable<string> BuscarArquivosDados(object sender, EventArgs e)
     {
         IEnumerable<string> returne = Enumerable.Empty<string>();
@@ -464,8 +459,6 @@ EMPRESA=1";
         {
             int i = 0;
             string pastaComBanco;
-            //string VersaoBanco = PegaVersaoDP(sender);
-            //MessageBox.Show(VersaoBanco);
             IEnumerable<string> arquivosFiltrados = BuscarArquivosDados(sender, e);
             if(arquivosFiltrados.Any()){}
             else
@@ -521,7 +514,7 @@ EMPRESA=1";
         }
     }
 
-    private void SearchTextBox_TextChanged(object sender, EventArgs e)
+    private void SearchTextBox_TextChanged(object sender, EventArgs e, Panel RadioBancoPanel)
     {
         TextBox textBox = (TextBox)sender;
         Label CheckBoxStatuslabel = new Label();
@@ -529,16 +522,25 @@ EMPRESA=1";
         string searchText = textBox.Text;
         string VersaoBanco;
         int rest = 0;
+
         if (!string.IsNullOrWhiteSpace(searchText))
         {
-            string termoDeBusca = searchText;            
-            foreach (var control in Controls.OfType<RadioButton>().ToList()){Controls.Remove(control);}
-            foreach (var control in Controls.OfType<Label>().ToList()){Controls.Remove(control);}
+            string termoDeBusca = searchText;
+            Control.ControlCollection controles = RadioBancoPanel.Controls;
+            while (controles.Count > 0)
+            {
+                Control controle = controles[0];
+                RadioBancoPanel.Controls.Remove(controle);
+                controle.Dispose();
+            }
+
             int checkBoxWidth = 200;
-                int checkBoxHeight = 20;
-                int initialX = 30;
-                int initialY = 150;
-                int spacing = 10;
+            int checkBoxHeight = 20;
+            int initialX = 30;
+            int initialY = 30;
+            int spacing = 10;
+
+
                 string DiretorioDeExecução = Directory.GetCurrentDirectory();
                 string diretorioPai = Path.Combine(DiretorioDeExecução, "..");
                 string pastaProcurada = Path.Combine(diretorioPai, "dados");
@@ -566,7 +568,7 @@ EMPRESA=1";
                             checkBox.Location = new Point(initialX + (checkBoxWidth + spacing) * rest, initialY);
                             checkBox.Size = new Size(checkBoxWidth, checkBoxHeight);
                             checkBox.CheckedChanged += CheckBox_CheckedChanged;
-                            Controls.Add(checkBox);
+                            RadioBancoPanel.Controls.Add(checkBox);
 
                             CheckBoxStatuslabel = new Label();
                             VersaoBanco = PegaVersao(checkBox);
@@ -577,30 +579,7 @@ EMPRESA=1";
                             if (VersaoBanco == "Pasta Vazia!") { CheckBoxStatuslabel.BackColor = Color.Black; }
                             CheckBoxStatuslabel.Location = new Point(checkBox.Location.X, checkBox.Location.Y + checkBox.Height);
                             CheckBoxStatuslabel.Size = new Size(checkBoxWidth, checkBoxHeight);
-                            Controls.Add(CheckBoxStatuslabel);
-
-                            Label versionLabel = new Label();
-                            versionLabel.Text = "Versão do Dispositivo: " + versaoDP;
-                            versionLabel.BackColor = Color.White;
-                            versionLabel.Location = new Point(50, 65); // 50 90
-                            versionLabel.AutoSize = true;
-                            Controls.Add(versionLabel);
-
-                            Label Desc1Label = new Label();
-                            Desc1Label.Text = "Desatualizado";
-                            Desc1Label.BackColor = Color.Red;
-                            Desc1Label.ForeColor = Color.White;
-                            Desc1Label.Location = new Point(750, 65); // 50 90
-                            Desc1Label.Size = new Size(85, 20);
-                            Controls.Add(Desc1Label);
-
-                            Label Desc2Label = new Label();
-                            Desc2Label.Text = "Atualizado";
-                            Desc2Label.BackColor = Color.Green;
-                            Desc2Label.ForeColor = Color.White;
-                            Desc2Label.Location = new Point(650, 65); // 50 90
-                            Desc2Label.Size = new Size(85, 20);
-                            Controls.Add(Desc2Label);
+                            RadioBancoPanel.Controls.Add(CheckBoxStatuslabel);
                 }
                     rest++;
                     i++;
@@ -608,13 +587,20 @@ EMPRESA=1";
         }
         else
         {
-            foreach (var control in Controls.OfType<RadioButton>().ToList()) { Controls.Remove(control); }
-            foreach (var control in Controls.OfType<Label>().ToList()) { Controls.Remove(control); }
+            Control.ControlCollection controles = RadioBancoPanel.Controls;
+            while (controles.Count > 0)
+            {
+                Control controle = controles[0];
+                RadioBancoPanel.Controls.Remove(controle);
+                controle.Dispose(); 
+            }
+
             int checkBoxWidth = 200;
             int checkBoxHeight = 20; 
             int initialX = 30;
-            int initialY = 150;
+            int initialY = 30;
             int spacing = 10;
+
             string DiretorioDeExecução = Directory.GetCurrentDirectory();
             string diretorioPai = Path.Combine(DiretorioDeExecução, "..");
             string pastaProcurada = Path.Combine(diretorioPai, "dados");
@@ -640,7 +626,7 @@ EMPRESA=1";
                 checkBox.Location = new Point(initialX + (checkBoxWidth + spacing) * rest, initialY);
                 checkBox.Size = new Size(checkBoxWidth, checkBoxHeight);
                 checkBox.CheckedChanged += CheckBox_CheckedChanged;
-                Controls.Add(checkBox);
+                RadioBancoPanel.Controls.Add(checkBox);
 
                 CheckBoxStatuslabel = new Label();
                 VersaoBanco = PegaVersao(checkBox);
@@ -651,31 +637,7 @@ EMPRESA=1";
                 if (VersaoBanco == "Pasta Vazia!") { CheckBoxStatuslabel.BackColor = Color.Black; }
                 CheckBoxStatuslabel.Location = new Point(checkBox.Location.X, checkBox.Location.Y + checkBox.Height);
                 CheckBoxStatuslabel.Size = new Size(checkBoxWidth, checkBoxHeight);
-                Controls.Add(CheckBoxStatuslabel);
-
-                Label versionLabel = new Label();
-                versionLabel.Text = "Versão do Dispositivo: " + versaoDP;
-                versionLabel.BackColor = Color.White;
-                versionLabel.Location = new Point(50, 65); // 50 90
-                versionLabel.AutoSize = true;
-                Controls.Add(versionLabel);
-
-                Label Desc1Label = new Label();
-                Desc1Label.Text = "Desatualizado";
-                Desc1Label.BackColor = Color.Red;
-                Desc1Label.ForeColor = Color.White;
-                Desc1Label.Location = new Point(750, 65); // 50 90
-                Desc1Label.Size = new Size(85, 20);
-                Controls.Add(Desc1Label);
-
-                Label Desc2Label = new Label();
-                Desc2Label.Text = "Atualizado";
-                Desc2Label.BackColor = Color.Green;
-                Desc2Label.ForeColor = Color.White;
-                Desc2Label.Location = new Point(650, 65); // 50 90
-                Desc2Label.Size = new Size(85, 20);
-                Controls.Add(Desc2Label);
-
+                RadioBancoPanel.Controls.Add(CheckBoxStatuslabel);
                 rest++;
             }
         }
@@ -685,7 +647,8 @@ EMPRESA=1";
 
     public static void Main()
     {
-        Application.Run(new MainForm());
+        try { Application.Run(new MainForm()); }
+        catch(Exception ex) { MessageBox.Show("Erro ao iniciar o aplicativo: " + ex.Message); }
     }
 }
 
